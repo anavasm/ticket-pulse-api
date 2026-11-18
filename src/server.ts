@@ -1,5 +1,6 @@
 import app from "./app.js";
+import { env } from "./shared/env.js";
 
-const PORT = 3000;
+const PORT = env.PORT;
 
 app.listen(PORT);
