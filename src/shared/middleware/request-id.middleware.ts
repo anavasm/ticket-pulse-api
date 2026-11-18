@@ -8,6 +8,7 @@ export const requestIdMiddleware: RequestHandler = (req, res, next) => {
   const parsed = requestIdSchema.safeParse(req.get("X-Request-Id"));
   const requestId = parsed.success ? parsed.data : randomUUID();
 
+  res.locals.requestId = requestId;
   res.setHeader("X-Request-Id", requestId);
   next();
 };

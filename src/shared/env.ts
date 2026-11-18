@@ -1,4 +1,7 @@
 import { z } from "zod";
+import pino from "pino";
+
+const bootstrapLogger = pino({ level: "error" }, pino.destination(2));
 
 const currencyCodes = [
   "USD",
@@ -48,12 +51,23 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(300),
+  LOG_LEVEL: z
+    .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+    .default("info"),
 });
 
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  console.error("Invalid environment variables:", _env.error.format());
+  bootstrapLogger.error(
+    {
+      issues: _env.error.issues.map((issue) => ({
+        variable: issue.path.join("."),
+        message: issue.message,
+      })),
+    },
+    "Invalid environment variables",
+  );
 
   process.exit(1);
 }
