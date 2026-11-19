@@ -1,18 +1,21 @@
 import express from "express";
 import { requestIdMiddleware } from "./shared/middleware/request-id.middleware.js";
-import { logger } from "./shared/logger.js";
-import { pinoHttp } from "pino-http";
+import { httpLoggingMiddleware } from "./shared/middleware/http-logging.middleware.js";
+import { notFoundMiddleware } from "./shared/middleware/not-found.middleware.js";
+import { errorHandlerMiddleware } from "./shared/middleware/error-handler.middleware.js";
+import { jsonErrorMiddleware } from "./shared/middleware/json-error.middleware.js";
 
 const app = express();
 
 app.use(requestIdMiddleware);
-app.use(
-  pinoHttp({
-    logger,
-    genReqId: (_req, res) => res.locals.requestId,
-  }),
-);
+app.use(httpLoggingMiddleware);
 
 app.use(express.json());
+app.use(jsonErrorMiddleware);
+
+//TODO: Add your routes here before the notFoundMiddleware and errorHandlerMiddleware
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 export default app;

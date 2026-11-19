@@ -18,10 +18,29 @@ vi.mock("../logger.js", async () => {
 
 import app from "../../app.js";
 
-const logLineSchema = z.object({ req: z.object({ id: z.string() }) });
+const logLineSchema = z.object({
+  level: z.number(),
+  msg: z.string(),
+  req: z.object({ id: z.string() }),
+  res: z.object({ statusCode: z.number() }).optional(),
+});
 
-const loggedRequestIds = () =>
-  lines.map((line) => logLineSchema.parse(JSON.parse(line)).req.id);
+const expectRequestLogs = async (requestId: string) => {
+  await vi.waitFor(() => {
+    const logs = lines.map((line) => logLineSchema.parse(JSON.parse(line)));
+
+    expect(
+      logs.some((log) => log.level === 50 && log.msg === "Operational error"),
+    ).toBe(true);
+    expect(
+      logs.some(
+        (log) =>
+          log.msg === "request completed" && log.res?.statusCode === 404,
+      ),
+    ).toBe(true);
+    expect(logs.every((log) => log.req.id === requestId)).toBe(true);
+  });
+};
 
 describe("request logging", () => {
   beforeEach(() => {
@@ -33,17 +52,13 @@ describe("request logging", () => {
 
     await request(app).get("/").set("X-Request-Id", requestId);
 
-    await vi.waitFor(() => {
-      expect(loggedRequestIds()).toEqual([requestId]);
-    });
+    await expectRequestLogs(requestId);
   });
 
   it("includes the generated X-Request-Id in the request logs", async () => {
     const response = await request(app).get("/");
 
-    await vi.waitFor(() => {
-      expect(loggedRequestIds()).toEqual([response.headers["x-request-id"]]);
-    });
+    await expectRequestLogs(response.headers["x-request-id"]);
   });
 
   it("logs the generated ID when the incoming one is invalid", async () => {
@@ -51,9 +66,8 @@ describe("request logging", () => {
       .get("/")
       .set("X-Request-Id", "not-a-uuid");
 
-    await vi.waitFor(() => {
-      expect(loggedRequestIds()).toEqual([response.headers["x-request-id"]]);
-    });
-    expect(loggedRequestIds()).not.toContain("not-a-uuid");
+    const requestId = response.headers["x-request-id"];
+    expect(requestId).not.toBe("not-a-uuid");
+    await expectRequestLogs(requestId);
   });
 });
