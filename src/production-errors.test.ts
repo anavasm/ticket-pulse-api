@@ -45,7 +45,9 @@ describe("production error handling", () => {
       },
     });
     await vi.waitFor(() =>
-      expect(lines.some((line) => line.includes("request completed"))).toBe(true),
+      expect(lines.some((line) => line.includes("request completed"))).toBe(
+        true,
+      ),
     );
     expect(JSON.stringify(response.body)).not.toContain(secret);
     expect(lines.join("")).not.toContain(secret);
@@ -72,7 +74,9 @@ describe("production error handling", () => {
       },
     });
     await vi.waitFor(() =>
-      expect(lines.some((line) => line.includes("request completed"))).toBe(true),
+      expect(lines.some((line) => line.includes("request completed"))).toBe(
+        true,
+      ),
     );
     for (const value of [
       secret,
@@ -137,7 +141,12 @@ describe("production error handling", () => {
     await vi.waitFor(() =>
       expect(lines.some((line) => line.includes("request errored"))).toBe(true),
     );
-    for (const value of [secret, "sensitive-query-value", "sensitive-header-value", "stack"]) {
+    for (const value of [
+      secret,
+      "sensitive-query-value",
+      "sensitive-header-value",
+      "stack",
+    ]) {
       expect(JSON.stringify(response.body)).not.toContain(value);
       expect(lines.join("")).not.toContain(value);
     }

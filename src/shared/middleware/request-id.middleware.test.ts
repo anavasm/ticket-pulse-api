@@ -10,9 +10,7 @@ describe("requestIdMiddleware", () => {
   it("returns the incoming X-Request-Id when it is a valid UUID v4", async () => {
     const requestId = randomUUID();
 
-    const response = await request(app)
-      .get("/")
-      .set("X-Request-Id", requestId);
+    const response = await request(app).get("/").set("X-Request-Id", requestId);
 
     expect(response.headers["x-request-id"]).toBe(requestId);
   });
@@ -27,9 +25,7 @@ describe("requestIdMiddleware", () => {
     ["not a UUID", "not-a-uuid"],
     ["a UUID of another version", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"],
   ])("replaces the header when it is %s", async (_label, invalidId) => {
-    const response = await request(app)
-      .get("/")
-      .set("X-Request-Id", invalidId);
+    const response = await request(app).get("/").set("X-Request-Id", invalidId);
 
     expect(response.headers["x-request-id"]).toMatch(UUID_V4_REGEX);
     expect(response.headers["x-request-id"]).not.toBe(invalidId);

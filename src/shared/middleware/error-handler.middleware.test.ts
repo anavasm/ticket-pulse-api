@@ -190,7 +190,8 @@ describe("errorHandlerMiddleware", () => {
 
     const entries = getEntries();
     const errorEntry = entries.find(
-      (entry) => entry.level === 50 && entry.msg === "Unexpected non-error thrown",
+      (entry) =>
+        entry.level === 50 && entry.msg === "Unexpected non-error thrown",
     );
     expect(errorEntry).toHaveProperty("req.id", requestId);
     expect(JSON.stringify(entries)).not.toContain(rejectedValue);
@@ -243,44 +244,47 @@ describe("errorHandlerMiddleware", () => {
   it.each([
     ["a different error type", "other.error", 400],
     ["a different status", "entity.parse.failed", 500],
-  ])("forwards %s from before the JSON error middleware", async (_label, type, status) => {
-    const { logger, getEntries } = createTestLogger();
-    const app = express();
-    const originalError = Object.assign(new Error("Parser failure"), {
-      type,
-      status,
-    });
+  ])(
+    "forwards %s from before the JSON error middleware",
+    async (_label, type, status) => {
+      const { logger, getEntries } = createTestLogger();
+      const app = express();
+      const originalError = Object.assign(new Error("Parser failure"), {
+        type,
+        status,
+      });
 
-    app.use(requestIdMiddleware);
-    app.use(
-      pinoHttp({
-        logger,
-        genReqId: (_req, res) => res.locals.requestId,
-      }),
-    );
-    app.use((_req, _res, next) => next(originalError));
-    app.use(jsonErrorMiddleware);
-    app.use(errorHandlerMiddleware);
+      app.use(requestIdMiddleware);
+      app.use(
+        pinoHttp({
+          logger,
+          genReqId: (_req, res) => res.locals.requestId,
+        }),
+      );
+      app.use((_req, _res, next) => next(originalError));
+      app.use(jsonErrorMiddleware);
+      app.use(errorHandlerMiddleware);
 
-    const response = await request(app).get("/");
-    const requestId = response.headers["x-request-id"];
+      const response = await request(app).get("/");
+      const requestId = response.headers["x-request-id"];
 
-    expect(typeof requestId).toBe("string");
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({
-      error: {
-        code: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected error occurred",
-        requestId,
-      },
-    });
-    const errorEntry = getEntries().find(
-      (entry) => entry.msg === "Unexpected error",
-    );
-    expect(errorEntry).toHaveProperty("req.id", requestId);
-    expect(errorEntry).toHaveProperty(
-      "errorStack",
-      expect.stringContaining("    at "),
-    );
-  });
+      expect(typeof requestId).toBe("string");
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "An unexpected error occurred",
+          requestId,
+        },
+      });
+      const errorEntry = getEntries().find(
+        (entry) => entry.msg === "Unexpected error",
+      );
+      expect(errorEntry).toHaveProperty("req.id", requestId);
+      expect(errorEntry).toHaveProperty(
+        "errorStack",
+        expect.stringContaining("    at "),
+      );
+    },
+  );
 });

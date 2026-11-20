@@ -34,8 +34,7 @@ const expectRequestLogs = async (requestId: string) => {
     ).toBe(true);
     expect(
       logs.some(
-        (log) =>
-          log.msg === "request completed" && log.res?.statusCode === 404,
+        (log) => log.msg === "request completed" && log.res?.statusCode === 404,
       ),
     ).toBe(true);
     expect(logs.every((log) => log.req.id === requestId)).toBe(true);
