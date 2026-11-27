@@ -5,16 +5,20 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "node --env-file=.env --import tsx src/server.ts",
-    "test": "vitest run",
+    "dev": "prisma generate && node --env-file=.env --import tsx src/server.ts",
+    "test": "prisma generate && vitest run",
+    "db:migrate:test": "prisma migrate deploy --config prisma.test.config.ts",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.ts\" package.json tsconfig.json vitest.config.ts eslint.config.js .prettierrc.json",
-    "format:check": "prettier --check \"src/**/*.ts\" package.json tsconfig.json vitest.config.ts eslint.config.js .prettierrc.json",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\" package.json tsconfig.json vitest.config.ts prisma.config.ts prisma.test.config.ts test-env.ts eslint.config.js .prettierrc.json",
+    "format:check": "prettier --check \"src/**/*.ts\" package.json tsconfig.json vitest.config.ts prisma.config.ts prisma.test.config.ts test-env.ts eslint.config.js .prettierrc.json",
+    "build": "prisma generate && tsc",
+    "typecheck": "prisma generate && tsc --noEmit",
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "dotenv": "^18.0.10",
     "express": "^5.1.0",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
@@ -30,6 +34,7 @@
     "globals": "^17.14.0",
     "pino-pretty": "^13.2.0",
     "prettier": "^3.10.1",
+    "prisma": "7.10.1",
     "supertest": "^7.3.2",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
@@ -37,7 +42,7 @@
     "vitest": "^3.2.7"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
   },
   "private": true,
   "author": "Alvaro Navas <alvaronavasmesa@gmail.com>"

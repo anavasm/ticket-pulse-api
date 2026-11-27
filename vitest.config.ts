@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { TEST_DATABASE_URL } from "./test-env.js";
 
 // Valores ficticios solo para tests; no son secretos reales.
 export default defineConfig({
@@ -6,7 +7,7 @@ export default defineConfig({
     env: {
       NODE_ENV: "test",
       LOG_LEVEL: "silent",
-      DATABASE_URL: "postgresql://test:test@localhost:5432/ticketpulse_test",
+      DATABASE_URL: TEST_DATABASE_URL,
       REDIS_URL: "redis://localhost:6379",
       JWT_ACCESS_SECRET: "test-only-access-secret-0123456789abcdef",
       JWT_REFRESH_SECRET: "test-only-refresh-secret-0123456789abcdef",
